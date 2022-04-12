@@ -1,5 +1,7 @@
 * {
   box-sizing: border-box;
+  word-break: break-all;
+  word-wrap: break-word;
 }
 
 body {
@@ -11,6 +13,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background-color: #1D201F;
   color: #D1DEDE;
+  padding: 5px 10px;
 }
 
 code {

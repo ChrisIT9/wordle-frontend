@@ -6,17 +6,24 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { LoginComponent } from './Components/Login';
 import { RegisterComponent } from './Components/Register';
+import { Provider } from 'react-redux';
+import store from './Store/User';
+import { GamesComponent } from './Components/Games';
+import { GameLobbyComponent } from './Components/GameLobbyComponent';
 
 ReactDOM.render(
 	<React.StrictMode>
-		<BrowserRouter>
-			<Routes>
-				<Route path='*' element={<App />} />
-        <Route path='login' element={<LoginComponent />} />
-        <Route path='register' element={<RegisterComponent />} />
-				<Route path='/' element={<App />} />
-			</Routes>
-		</BrowserRouter>
+		<Provider store={store}>
+			<BrowserRouter>
+				<Routes>
+					<Route path='*' element={<App />} />
+					<Route path='login' element={<LoginComponent />} />
+					<Route path='register' element={<RegisterComponent />} />
+					<Route path='/games' element={<GamesComponent />} />
+					<Route path='/games/:gameId/lobby' element={<GameLobbyComponent />} />
+				</Routes>
+			</BrowserRouter>
+		</Provider>
 	</React.StrictMode>,
 	document.getElementById('root')
 );

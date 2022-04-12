@@ -1,11 +1,17 @@
 import { Alert, Button, TextField } from '@mui/material';
 import { FC, useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { LoginResponse } from '../../Typings/Responses';
+import { addUsername, clearUsername } from '../../Store/User/User.actions';
+import { LoginResponse, MeResponse } from '../../Typings/Responses';
+import { getDefaultGetOptions, getDefaultPostOptions } from '../../Utils/Requests';
 import { backendEndpoint } from '../Environment';
+import CircularProgress from '@mui/material/CircularProgress';
 import './index.css';
 
 export const LoginComponent: FC = () => {
+	const dispatch = useDispatch();
+	const navigate = useNavigate();
 	const [providedUsername, setUsername] = useState(
 		undefined as string | undefined
 	);
@@ -18,47 +24,78 @@ export const LoginComponent: FC = () => {
 	const [passwordError, setPasswordError] = useState(
 		undefined as string | undefined
 	);
+	const [waitingForResponse, setWaitingForResponse] = useState(false);
+	const [serverUnreachable, setServerUnreachable] = useState(false);
 	const [hasLoggedIn, setHasLoggedIn] = useState(false);
-	const navigate = useNavigate();
+
+	const checkMe = async () => {
+		try {
+			const response = await fetch(`${backendEndpoint}/auth/me`, {
+				...getDefaultGetOptions()
+			});
+			const { username } = (await response.json()) as MeResponse;
+			if (response.status === 200) {
+				username && dispatch(addUsername(username));
+				navigate('/games');
+			}
+		} catch (error) {
+			setServerUnreachable(true);
+			dispatch(clearUsername());
+		}
+	};
 
 	useEffect(() => {
 		checkMe();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
-
-	const checkMe = async () => {
-		const response = await fetch(`${backendEndpoint}/auth/me`, {
-			mode: 'cors',
-			credentials: 'include',
-		});
-		if (response.status === 200) navigate('/games');
-	};
 
 	const login = async () => {
 		setUsernameError(undefined);
 		setPasswordError(undefined);
-		const response = await fetch(`${backendEndpoint}/auth/login`, {
-			method: 'POST',
-			mode: 'cors',
-			credentials: 'include',
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded',
-			},
-			body: `username=${providedUsername}&password=${providedPassword}`,
-		});
-		const { errors, username, isAdmin } =
-			(await response.json()) as LoginResponse;
-		if (errors) {
-			const [error] = errors;
-			error.includes('Username') && setUsernameError(error);
-			error.includes('Password') && setPasswordError(error);
-		} else if (username) {
-			setHasLoggedIn(true);
-      setTimeout(navigate, 1500, '/games');
+		setServerUnreachable(false);
+		if (!providedUsername || !providedPassword) {
+			!providedUsername && setUsernameError('Inserisci uno username!');
+			!providedPassword && setPasswordError('Inserisci una password!');
+			return;
+		}
+		setWaitingForResponse(true);
+		try {
+			const response = await fetch(`${backendEndpoint}/auth/login`, {
+				...getDefaultPostOptions(),
+				body: new URLSearchParams({
+					username: providedUsername,
+					password: providedPassword,
+				}).toString(),
+			});
+			const { errors, username } = (await response.json()) as LoginResponse;
+			if (errors) {
+				const [error] = errors;
+				error.toLowerCase().includes('username') && setUsernameError(error);
+				error.toLowerCase().includes('password') && setPasswordError(error);
+			} else if (username) {
+				dispatch(addUsername(username));
+				setHasLoggedIn(true);
+				setTimeout(navigate, 1500, '/games');
+			}
+			setWaitingForResponse(false);
+		} catch (error) {
+			setServerUnreachable(true);
+			setWaitingForResponse(false);
+			dispatch(clearUsername());
 		}
 	};
 
 	return (
 		<div className='loginContainer'>
+			<Alert
+				severity='error'
+				sx={{
+					fontWeight: 'bold',
+					display: serverUnreachable ? 'flex' : 'none',
+				}}
+			>
+				Il server non è raggiungibile - riprova!
+			</Alert>
 			<Alert
 				severity='success'
 				sx={{ fontWeight: 'bold', display: hasLoggedIn ? 'flex' : 'none' }}
@@ -68,11 +105,12 @@ export const LoginComponent: FC = () => {
 			<h1>Effettua l'accesso</h1>
 			<div className='login'>
 				<TextField
-					id='filled-basic'
+					id='username'
 					required
 					color='info'
 					label='Username'
 					variant='filled'
+					autoComplete='off'
 					sx={{
 						marginBottom: 2.5,
 						input: { color: 'white' },
@@ -88,7 +126,7 @@ export const LoginComponent: FC = () => {
 					helperText={usernameError}
 				/>
 				<TextField
-					id='filled-basic'
+					id='password'
 					type='password'
 					required
 					label='Password'
@@ -108,7 +146,7 @@ export const LoginComponent: FC = () => {
 					helperText={passwordError}
 				/>
 				<Button variant='contained' sx={{ width: '100%' }} onClick={login}>
-					Accedi
+					{waitingForResponse ? <CircularProgress sx={{ color: 'white' }}/> : 'Accedi'}
 				</Button>
 			</div>
 		</div>
