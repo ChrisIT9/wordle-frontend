@@ -85,7 +85,7 @@ export const RegisterComponent: FC = () => {
 				error.toLowerCase().includes('password') && setPasswordConfirmationError(error);
 			} else if (username) {
 				setHasSignedUp(true);
-				setTimeout(navigate, 1500, '/login');
+				setTimeout(navigate, 1000, '/login');
 			}
 			setWaitingForResponse(false);
 		} catch (error) {
@@ -175,8 +175,12 @@ export const RegisterComponent: FC = () => {
 					error={!!passwordConfirmationError}
 					helperText={passwordConfirmationError}
 				/>
-				<Button variant='contained' sx={{ width: '100%' }} onClick={register}>
+				<Button variant='contained' sx={{ width: '100%', borderRadius: '50px', marginBottom: '25px' }} onClick={register}>
 					{waitingForResponse ? <CircularProgress sx={{ color: 'white' }}/> : 'Registrati'}
+				</Button>
+				Sei già un utente?
+				<Button variant='contained' sx={{ width: '100%', borderRadius: '50px', marginTop: '5px', backgroundColor: '#0a5a10' }} onClick={() => navigate('/login')}>
+					Accedi
 				</Button>
 			</div>
 		</div>

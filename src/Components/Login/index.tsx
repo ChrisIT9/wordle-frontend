@@ -75,7 +75,7 @@ export const LoginComponent: FC = () => {
 			} else if (username) {
 				dispatch(addUsername(username));
 				setHasLoggedIn(true);
-				setTimeout(navigate, 1500, '/games');
+				setTimeout(navigate, 1000, '/games');
 			}
 			setWaitingForResponse(false);
 		} catch (error) {
@@ -145,8 +145,12 @@ export const LoginComponent: FC = () => {
 					error={!!passwordError}
 					helperText={passwordError}
 				/>
-				<Button variant='contained' sx={{ width: '100%' }} onClick={login}>
+				<Button variant='contained' sx={{ width: '100%', borderRadius: '50px', marginBottom: '25px' }} onClick={login}>
 					{waitingForResponse ? <CircularProgress sx={{ color: 'white' }}/> : 'Accedi'}
+				</Button>
+				Non sei ancora un utente?
+				<Button variant='contained' sx={{ width: '100%', borderRadius: '50px', marginTop: '5px', backgroundColor: '#0a5a10' }} onClick={() => navigate('/register')}>
+					Registrati
 				</Button>
 			</div>
 		</div>

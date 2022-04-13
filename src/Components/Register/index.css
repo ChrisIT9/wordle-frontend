@@ -1,6 +1,6 @@
 .register {
 	display: flex;
-	flex-flow: column wrap;
+	flex-flow: column nowrap;
 	justify-content: space-between;
 	align-items: center;
 	border-radius: 10px;
@@ -11,9 +11,9 @@
 
 .registerContainer {
 	width: 100%;
-	height: 100vh;
+	height: 95vh;
 	display: flex;
-	flex-flow: column wrap;
+	flex-flow: column nowrap;
 	justify-content: center;
 	align-items: center;
 }

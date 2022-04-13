@@ -1,14 +1,20 @@
-import { FC, useEffect, useState } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { FC, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { backendEndpoint, socketEndpoint } from '../Environment';
-import { getDefaultGetOptions } from '../../Utils/Requests';
+import {
+	getDefaultGetOptions,
+	getDefaultPostOptions,
+} from '../../Utils/Requests';
 import { MeResponse } from '../../Typings/Responses';
 import { useDispatch } from 'react-redux';
 import { addUsername, clearUsername } from '../../Store/User/User.actions';
 import './index.css';
-import { Game } from '../../Typings/Entitites';
-import { Alert } from '@mui/material';
+import { Game } from '../../Typings/Entitities';
+import { Alert, Button, Snackbar } from '@mui/material';
+import { SocketEvent } from '../../Typings/Misc';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 export const GameLobbyComponent: FC = () => {
 	const dispatch = useDispatch();
@@ -16,16 +22,25 @@ export const GameLobbyComponent: FC = () => {
 	const { gameId: receivedGameId } = useParams();
 	const [serverUnreachable, setServerUnreachable] = useState(false);
 	const [socket, setSocket] = useState(undefined as undefined | Socket);
+	const socketRef = useRef<Socket | undefined>();
+	socketRef.current = socket;
 	const [isHost, setIsHost] = useState(false);
+	const [gameHost, setGameHost] = useState(undefined as string | undefined);
 	const [gameIdAndUser, setGameIdAndUser] = useState({
 		user: undefined as string | undefined,
 		gameId: undefined as string | undefined,
 	});
 	const [lobbyError, setLobbyError] = useState(false);
-  const [lobbyErrorMessage, setLobbyErrorMessage] = useState(undefined as string | undefined);
+	const [lobbyErrorMessage, setLobbyErrorMessage] = useState(
+		undefined as string | undefined
+	);
+	const [players, setPlayers] = useState([] as string[]);
+	const playersRef = useRef<string[]>();
+	playersRef.current = players;
+	const [gameStartError, setGameStartError] = useState(false);
 
 	window.addEventListener('popstate', () => {
-		if (socket?.connected) socket?.disconnect();
+		if (socketRef.current?.connected) socketRef.current?.disconnect();
 	});
 
 	const checkLobby = async (user: string) => {
@@ -36,23 +51,43 @@ export const GameLobbyComponent: FC = () => {
 				...getDefaultGetOptions(),
 			}
 		);
-    if (response.status === 404) {
-      setLobbyError(true);
-      setLobbyErrorMessage('Non esiste nessuna partita per questo ID');
-      return;
-    }
-		const { game, isHost: isGameHost, errors } = (await response.json()) as {
+		if (response.status === 404) {
+			setLobbyError(true);
+			setLobbyErrorMessage('Non esiste nessuna partita per questo ID');
+			return;
+		}
+		const {
+			game,
+			isHost: isGameHost,
+			errors,
+		} = (await response.json()) as {
 			errors?: string[];
 			game?: Game;
 			isHost?: boolean;
 		};
 		if (game && isGameHost != null) {
-			setGameIdAndUser({ gameId: game.gameId, user });
+			setPlayers(game.players);
 			setIsHost(isGameHost);
+			setGameHost(game.host);
+			setGameIdAndUser({ gameId: game.gameId, user });
 		} else if (errors) {
-      const [error] = errors;
+			const [error] = errors;
 			setLobbyError(true);
-      setLobbyErrorMessage(error || 'Impossibile connettersi alla lobby!');
+			setLobbyErrorMessage(error || 'Impossibile connettersi alla lobby!');
+		}
+	};
+
+	const startGame = async () => {
+		setGameStartError(false);
+		const response = await fetch(
+			`${backendEndpoint}/games/${receivedGameId}/status`,
+			{
+				...getDefaultPostOptions(),
+				method: 'PUT',
+			}
+		);
+		if (response.status !== 200) {
+			setGameStartError(true);
 		}
 	};
 
@@ -64,7 +99,7 @@ export const GameLobbyComponent: FC = () => {
 		user: string | undefined;
 	}) => {
 		if (!gameId || !user) return;
-		socket?.close();
+		socketRef.current?.disconnect();
 		const newSocket = io(`${socketEndpoint}/games/${gameId}`, {
 			transports: ['websocket'],
 			query: {
@@ -73,12 +108,43 @@ export const GameLobbyComponent: FC = () => {
 			},
 			forceNew: true,
 		});
+		newSocket.on(SocketEvent.PLAYER_CONNECTED, (connectedPlayer: string) => {
+			if (!playersRef.current?.includes(connectedPlayer)) {
+				setPlayers([...players, connectedPlayer]);
+			}
+		});
+		newSocket.on(
+			SocketEvent.PLAYER_DISCONNECTED,
+			(disconnectedPlayer: string) => {
+				const playerIndex = playersRef.current?.findIndex(
+					player => player === disconnectedPlayer
+				);
+				if (playerIndex != null && playerIndex !== -1) {
+					players.splice(playerIndex, 1);
+					setPlayers(players);
+				}
+			}
+		);
+		newSocket.on(SocketEvent.HOST_DISCONNECTED, () => {
+			setLobbyError(true);
+			setLobbyErrorMessage(
+				`${gameHost} si è disconnesso. La partita è stata annullata`
+			);
+		});
+		newSocket.on(SocketEvent.GAME_STARTED, () => {
+			socketRef.current?.disconnect();
+			navigate(`/games/${receivedGameId}`);
+		});
+		newSocket.on(SocketEvent.SOCKET_CONFLICT, () => {
+			setLobbyError(true);
+			setLobbyErrorMessage(`Sei già connesso a questa partita`);
+		});
 		/* if (newSocket?.io.opts.query) {
 			newSocket.io.opts.query = {
 				...newSocket.io.opts.query,
 				gameId: gameIdAndUser.gameId,
 			};
-		} */ // keeping this in case i need to force the query params for the socket manager 
+		} */ // keeping this in case i need to force the query params for the socket manager
 		setSocket(newSocket);
 	};
 
@@ -103,7 +169,7 @@ export const GameLobbyComponent: FC = () => {
 	useEffect(() => {
 		checkMe();
 		return () => {
-			socket?.disconnect(); // fired when component is unmounted
+			socketRef.current?.disconnect(); // fired when component is unmounted
 		};
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
@@ -137,10 +203,83 @@ export const GameLobbyComponent: FC = () => {
 					marginTop: '10px',
 				}}
 			>
-			  {lobbyErrorMessage} - aggiorna la pagina o{' '}
-				<Link to='/games'>torna alla home</Link>!
+				{lobbyErrorMessage} - <Link to='/games'>torna alla home</Link>
 			</Alert>
-			<h1>{gameIdAndUser.gameId}</h1>
+			<Snackbar
+				open={gameStartError}
+				autoHideDuration={1500}
+				onClose={() => setGameStartError(false)}
+			>
+				<Alert severity='error' sx={{ width: '100%', fontWeight: 'bold' }}>
+					Si è verificato un errore durante l'avvio della partita.
+				</Alert>
+			</Snackbar>
+			<div
+				className='lobbyScreenContainer'
+				style={{
+					display: !serverUnreachable && !lobbyError ? 'flex' : 'none',
+					textAlign: 'center',
+				}}
+			>
+				<h2>
+					Lobby <i>({gameIdAndUser.gameId})</i>
+				</h2>
+				<div className='lobbyNavbar'>
+					<Button
+						variant='contained'
+						sx={{
+							alignSelf: 'start',
+							backgroundColor: '#0a5a10',
+							borderRadius: '50px',
+						}}
+						onClick={() => {
+							socket?.disconnect();
+							navigate('/games');
+						}}
+					>
+						<ArrowBackIcon></ArrowBackIcon> Indietro
+					</Button>
+					<Button
+						variant='contained'
+						sx={{
+							alignSelf: 'end',
+							backgroundColor: '#0a5a10',
+							display:
+								!serverUnreachable && isHost && !lobbyError ? 'flex' : 'none',
+							borderRadius: '50px',
+						}}
+						disabled={players.length < 2}
+						onClick={startGame}
+					>
+						Inizia partita
+					</Button>
+				</div>
+				<div className='lobbyScreen'>
+					<h2>Giocatori connessi:</h2>
+					{players.map(player => (
+						<div className='playerCard' key={player}>
+							<span>
+								{player}{' '}
+								{player === gameHost ? (
+									<span
+										style={{
+											display: 'inline-flex',
+											flexFlow: 'row nowrap',
+											justifyContent: 'center',
+											alignItems: 'center',
+										}}
+									>
+										{' '}
+										• (Host)
+									</span>
+								) : (
+									''
+								)}
+							</span>
+						</div>
+					))}
+				</div>
+			</div>
 		</>
 	);
 };

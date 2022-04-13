@@ -9,7 +9,7 @@ import {
 } from '@mui/material';
 import { FC, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Game } from '../../Typings/Entitites';
+import { Game } from '../../Typings/Entitities';
 import { getDefaultPostOptions } from '../../Utils/Requests';
 import { backendEndpoint } from '../Environment';
 import './index.css';

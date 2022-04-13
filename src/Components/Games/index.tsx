@@ -3,12 +3,16 @@ import { FC, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addUsername, clearUsername } from '../../Store/User/User.actions';
-import { Game } from '../../Typings/Entitites';
+import { Game } from '../../Typings/Entitities';
 import { MeResponse } from '../../Typings/Responses';
-import { getDefaultGetOptions, getDefaultPostOptions } from '../../Utils/Requests';
+import {
+	getDefaultGetOptions,
+	getDefaultPostOptions,
+} from '../../Utils/Requests';
 import { backendEndpoint } from '../Environment';
 import { LobbyCard } from '../LobbyCard';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import LogoutIcon from '@mui/icons-material/Logout';
 import './index.css';
 
 export const GamesComponent: FC = () => {
@@ -19,17 +23,32 @@ export const GamesComponent: FC = () => {
 	const [waitingForResponse, setWaitingForResponse] = useState(false);
 	const [lobbyCreationError, setLobbyCreationError] = useState(false);
 
-  const createLobby = async () => {
-    const response = await fetch(`${backendEndpoint}/games`, {
-      ...getDefaultPostOptions()
-    });
-    const { game } = await response.json() as { game?: Game, errors?: string[] }
-    if (game) {
-      navigate(`/games/${game.gameId}/lobby`);
-    } else {
-      setLobbyCreationError(true);
-    }
-  };
+	const createLobby = async () => {
+		const response = await fetch(`${backendEndpoint}/games`, {
+			...getDefaultPostOptions(),
+		});
+		const { game } = (await response.json()) as {
+			game?: Game;
+			errors?: string[];
+		};
+		if (game) {
+			navigate(`/games/${game.gameId}/lobby`);
+		} else {
+			setLobbyCreationError(true);
+		}
+	};
+	
+	const logout = async () => {
+		try {
+			const response = await fetch(`${backendEndpoint}/auth/logout`, {
+				...getDefaultPostOptions(),
+			});
+			if (response.status === 200) navigate('/login');
+		} catch (error) {
+			setServerUnreachable(true);
+			dispatch(clearUsername());
+		}
+	};
 
 	const fetchLobbies = async () => {
 		setWaitingForResponse(true);
@@ -99,28 +118,42 @@ export const GamesComponent: FC = () => {
 				<Button
 					variant='contained'
 					sx={{
-						alignSelf: 'end',
-						backgroundColor: '#0a5a10',
+						alignSelf: 'start',
+						backgroundColor: '#a30b0b',
 						display: serverUnreachable ? 'none' : 'flex',
 						borderRadius: '50px',
 					}}
-          onClick={createLobby}
+					onClick={logout}
 				>
-					Crea partita
+					<LogoutIcon></LogoutIcon>
 				</Button>
-        <Button
-					variant='contained'
-					sx={{
-						alignSelf: 'end',
-						backgroundColor: '#0a5a10',
-						display: serverUnreachable ? 'none' : 'flex',
-						borderRadius: '50px',
-            marginLeft: '5px'
-					}}
-          onClick={fetchLobbies}
-				>
-					<RefreshIcon sx={{ color: 'white' }}></RefreshIcon>
-				</Button>
+				<div style={{ display: 'flex', flexFlow: 'row nowrap', justifyContent: 'center', alignItems: 'center' }}>
+					<Button
+						variant='contained'
+						sx={{
+							alignSelf: 'end',
+							backgroundColor: '#0a5a10',
+							display: serverUnreachable ? 'none' : 'flex',
+							borderRadius: '50px',
+						}}
+						onClick={createLobby}
+					>
+						Crea partita
+					</Button>
+					<Button
+						variant='contained'
+						sx={{
+							alignSelf: 'end',
+							backgroundColor: '#0a5a10',
+							display: serverUnreachable ? 'none' : 'flex',
+							borderRadius: '50px',
+							marginLeft: '5px',
+						}}
+						onClick={fetchLobbies}
+					>
+						<RefreshIcon sx={{ color: 'white' }}></RefreshIcon>
+					</Button>
+				</div>
 			</div>
 			<div className='games'>
 				<CircularProgress

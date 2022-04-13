@@ -1,0 +1,49 @@
+.keyboard {
+  display: flex;
+  flex-flow: column wrap;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.keyboardRow {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.key {
+  height: 58px;
+  width: 35px;
+  padding: 0px 5px;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  margin: 3px;
+  border-radius: 5px;
+  cursor: pointer;
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+   -khtml-user-select: none; /* Konqueror HTML */
+     -moz-user-select: none; /* Old versions of Firefox */
+      -ms-user-select: none; /* Internet Explorer/Edge */
+          user-select: none; /* Non-prefixed version, currently
+                                supported by Chrome, Edge, Opera and Firefox */
+}
+
+.EMPTY_KEY {
+  background-color: #818384;
+}
+
+.RIGHT_KEY {
+  background-color: #538d4e;
+}
+
+.WRONG_KEY {
+  background-color: #3a3a3c;
+}
+
+.WRONG_POSITION_KEY {
+  background-color: #b59f3b;
+}

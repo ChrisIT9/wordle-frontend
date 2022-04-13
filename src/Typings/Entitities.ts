@@ -20,9 +20,3 @@ export enum GameStatus {
   WON = 'WON',
   TIED = 'TIED'
 }
-
-export enum LetterPosition {
-  MISSING = 'WRONG',
-  RIGHT = 'RIGHT',
-  WRONG_POSITION = 'WRONG POSITION'
-}
