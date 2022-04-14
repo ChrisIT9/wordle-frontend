@@ -59,22 +59,25 @@ export const LobbyCard: FC<{ game: Game }> = props => {
 					marginTop: 1.25,
 					marginBottom: 1.25,
 					textAlign: 'start',
+					backgroundColor: 'rgba(0, 0, 0, 0.6)',
+					borderRadius: '15px'
 				}}
 			>
 				<CardContent>
-					<Typography sx={{ fontSize: 14 }} color='text.secondary' gutterBottom>
+					<Typography sx={{ fontSize: 14,  }} color='#d1dede' gutterBottom>
 						ID: <b>{game.gameId}</b>
 					</Typography>
-					<Typography variant='h5' component='div'>
-						Proprietario: <b>{game.host}</b>
+					<Typography variant='h5' component='div' color='#d1dede'>
+						Lobby di <b>{game.host}</b>
 					</Typography>
-					<Typography color='text.secondary'>
+					<Typography color='#d1dede'>
 						Giocatori: <b>{game.players.length}/2</b>
 					</Typography>
 				</CardContent>
 				<CardActions>
 					<Button
-						sx={{ fontWeight: 'bold' }}
+						sx={{ fontWeight: 'bold', color: '#d1dede', borderRadius: '50px' }}
+						variant='contained'
 						size='small'
 						onClick={() => joinLobby(game.gameId)}
 					>

@@ -84,47 +84,52 @@ export const GameComponent: FC = () => {
 	const sendWord = async () => {
 		setInvalidWord(false);
 		if (!currentWordRef.current) return;
-		const response = await fetch(
-			`${backendEndpoint}/games/${receivedGameId}/moves`,
-			{
-				...getDefaultPostOptions(),
-				method: 'PATCH',
-				body: new URLSearchParams({
-					word: currentWordRef.current,
-				}).toString(),
+		try {
+			const response = await fetch(
+				`${backendEndpoint}/games/${receivedGameId}/moves`,
+				{
+					...getDefaultPostOptions(),
+					method: 'PATCH',
+					body: new URLSearchParams({
+						word: currentWordRef.current,
+					}).toString(),
+				}
+			);
+			if (response.status === 400) {
+				setInvalidWord(true);
+				return;
 			}
-		);
-		if (response.status === 400) {
-			setInvalidWord(true);
-			return;
-		}
-		const { board } = (await response.json()) as {
-			board: LetterPosition[];
-			hasWon: boolean;
-		};
-		if (board && playerMovesRef.current != undefined) {
-			currentWordRef.current.split('').map((letter, index) => {
-				if (!keyboardStatusRef.current) return null;
-				if (
-					keyboardStatusRef.current[letter as 'A'] === LetterPosition.RIGHT ||
-					(keyboardStatusRef.current[letter as 'A'] !==
-						LetterPosition.EMPTY && board[index] === LetterPosition.MISSING)
-				)
-					return null;
-				setKeyboardStatus({
-					...keyboardStatusRef.current,
-					[letter as 'A']: board[index],
+			const { board } = (await response.json()) as {
+				board: LetterPosition[];
+				hasWon: boolean;
+			};
+			if (board && playerMovesRef.current != undefined) {
+				currentWordRef.current.split('').map((letter, index) => {
+					if (!keyboardStatusRef.current) return null;
+					if (
+						keyboardStatusRef.current[letter as 'A'] === LetterPosition.RIGHT ||
+						(keyboardStatusRef.current[letter as 'A'] !==
+							LetterPosition.EMPTY &&
+							board[index] === LetterPosition.MISSING)
+					)
+						return null;
+					setKeyboardStatus({
+						...keyboardStatusRef.current,
+						[letter as 'A']: board[index],
+					});
 				});
-			});
-			setPlayerBoard({
-				...playerBoardRef.current,
-				[playerMovesRef.current]: {
-					word: currentWordRef.current,
-					letterPositions: board,
-				},
-			});
-			setCurrentWord('');
-			setPlayerMoves(playerMovesRef.current + 1);
+				setPlayerBoard({
+					...playerBoardRef.current,
+					[playerMovesRef.current]: {
+						word: currentWordRef.current,
+						letterPositions: board,
+					},
+				});
+				setCurrentWord('');
+				setPlayerMoves(playerMovesRef.current + 1);
+			}
+		} catch (error) {
+			// error handling
 		}
 	};
 
@@ -148,29 +153,34 @@ export const GameComponent: FC = () => {
 
 	const checkGame = async (user: string) => {
 		setGameJoinError(false);
-		const response = await fetch(
-			`${backendEndpoint}/games/${receivedGameId}/`,
-			{
-				...getDefaultGetOptions(),
+		try {
+			const response = await fetch(
+				`${backendEndpoint}/games/${receivedGameId}/`,
+				{
+					...getDefaultGetOptions(),
+				}
+			);
+			if (response.status === 404) {
+				setGameJoinError(true);
+				setGameJoinErrorMessage('Non esiste nessuna partita per questo ID');
+				return;
 			}
-		);
-		if (response.status === 404) {
-			setGameJoinError(true);
-			setGameJoinErrorMessage('Non esiste nessuna partita per questo ID');
-			return;
-		}
-		const responseBody = (await response.json()) as
-			| Game
-			| { errors?: string[]; message?: string };
-		if (response.status === 200) {
-			setGameIdAndUser({ gameId: (responseBody as Game).gameId, user });
-		} else {
-			setGameJoinError(true);
-			if ('errors' in responseBody && responseBody.errors) {
-				setGameJoinErrorMessage(responseBody.errors[0]);
-			} else if ('message' in responseBody) {
-				setGameJoinErrorMessage(responseBody.message);
+			const responseBody = (await response.json()) as
+				| Game
+				| { errors?: string[]; message?: string };
+			if (response.status === 200) {
+				setGameIdAndUser({ gameId: (responseBody as Game).gameId, user });
+			} else {
+				setGameJoinError(true);
+				if ('errors' in responseBody && responseBody.errors) {
+					setGameJoinErrorMessage(responseBody.errors[0]);
+				} else if ('message' in responseBody) {
+					setGameJoinErrorMessage(responseBody.message);
+				}
 			}
+		} catch (error) {
+			setGameJoinError(true);
+			setGameJoinErrorMessage('Il server non è raggiungibile!');
 		}
 	};
 
@@ -235,12 +245,6 @@ export const GameComponent: FC = () => {
 				}
 			}
 		);
-		/* if (newSocket?.io.opts.query) {
-			newSocket.io.opts.query = {
-				...newSocket.io.opts.query,
-				gameId: gameIdAndUser.gameId,
-			};
-		} */ // keeping this in case i need to force the query params for the socket manager
 		setSocket(newSocket);
 	};
 
@@ -329,12 +333,15 @@ export const GameComponent: FC = () => {
 							</span>
 						) : (
 							<span>
-								Hai indovinato la parola in <b>{playerMoves}</b> mosse.
+								Hai indovinato la parola in <b>{playerMoves}</b> tentativi.
 							</span>
 						)}
 						<br />
 						<Link to='/games'>
-							<Button variant='contained' sx={{ marginTop: '10px', borderRadius: '50px', }}>
+							<Button
+								variant='contained'
+								sx={{ marginTop: '10px', borderRadius: '50px' }}
+							>
 								Torna alla home
 							</Button>
 						</Link>
@@ -361,7 +368,7 @@ export const GameComponent: FC = () => {
 						></KeyboardComponent>
 					</div>
 				</div>
-				<div className='boardContainer'>
+				<div className='boardContainer' style={{ marginBottom: '15px' }}>
 					<h3>Avversario</h3>
 					<BoardComponent board={opponentBoard}></BoardComponent>
 				</div>

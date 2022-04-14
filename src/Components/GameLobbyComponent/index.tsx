@@ -45,48 +45,62 @@ export const GameLobbyComponent: FC = () => {
 
 	const checkLobby = async (user: string) => {
 		setLobbyError(false);
-		const response = await fetch(
-			`${backendEndpoint}/games/${receivedGameId}/lobby`,
-			{
-				...getDefaultGetOptions(),
+		try {
+			const response = await fetch(
+				`${backendEndpoint}/games/${receivedGameId}/lobby`,
+				{
+					...getDefaultGetOptions(),
+				}
+			);
+			if (response.status === 404) {
+				setLobbyError(true);
+				setLobbyErrorMessage('Non esiste nessuna partita per questo ID');
+				return;
 			}
-		);
-		if (response.status === 404) {
+			if (response.status === 403) {
+				setLobbyError(true);
+				setLobbyErrorMessage('Non sei un giocatore di questa partita');
+				return;
+			}
+			const {
+				game,
+				isHost: isGameHost,
+				errors,
+			} = (await response.json()) as {
+				errors?: string[];
+				game?: Game;
+				isHost?: boolean;
+			};
+			if (game && isGameHost != null) {
+				setPlayers(game.players);
+				setIsHost(isGameHost);
+				setGameHost(game.host);
+				setGameIdAndUser({ gameId: game.gameId, user });
+			} else if (errors) {
+				const [error] = errors;
+				setLobbyError(true);
+				setLobbyErrorMessage(error || 'Impossibile connettersi alla lobby!');
+			}
+		} catch (error) {
 			setLobbyError(true);
-			setLobbyErrorMessage('Non esiste nessuna partita per questo ID');
-			return;
-		}
-		const {
-			game,
-			isHost: isGameHost,
-			errors,
-		} = (await response.json()) as {
-			errors?: string[];
-			game?: Game;
-			isHost?: boolean;
-		};
-		if (game && isGameHost != null) {
-			setPlayers(game.players);
-			setIsHost(isGameHost);
-			setGameHost(game.host);
-			setGameIdAndUser({ gameId: game.gameId, user });
-		} else if (errors) {
-			const [error] = errors;
-			setLobbyError(true);
-			setLobbyErrorMessage(error || 'Impossibile connettersi alla lobby!');
+			setLobbyErrorMessage('Il server non è raggiungibile!');
 		}
 	};
 
 	const startGame = async () => {
 		setGameStartError(false);
-		const response = await fetch(
-			`${backendEndpoint}/games/${receivedGameId}/status`,
-			{
-				...getDefaultPostOptions(),
-				method: 'PUT',
+		try {
+			const response = await fetch(
+				`${backendEndpoint}/games/${receivedGameId}/status`,
+				{
+					...getDefaultPostOptions(),
+					method: 'PUT',
+				}
+			);
+			if (response.status !== 200) {
+				setGameStartError(true);
 			}
-		);
-		if (response.status !== 200) {
+		} catch (error) {
 			setGameStartError(true);
 		}
 	};
@@ -139,12 +153,6 @@ export const GameLobbyComponent: FC = () => {
 			setLobbyError(true);
 			setLobbyErrorMessage(`Sei già connesso a questa partita`);
 		});
-		/* if (newSocket?.io.opts.query) {
-			newSocket.io.opts.query = {
-				...newSocket.io.opts.query,
-				gameId: gameIdAndUser.gameId,
-			};
-		} */ // keeping this in case i need to force the query params for the socket manager
 		setSocket(newSocket);
 	};
 
@@ -221,9 +229,6 @@ export const GameLobbyComponent: FC = () => {
 					textAlign: 'center',
 				}}
 			>
-				<h2>
-					Lobby <i>({gameIdAndUser.gameId})</i>
-				</h2>
 				<div className='lobbyNavbar'>
 					<Button
 						variant='contained'
@@ -255,6 +260,9 @@ export const GameLobbyComponent: FC = () => {
 					</Button>
 				</div>
 				<div className='lobbyScreen'>
+					<h2>
+						ID Partita: <i>{gameIdAndUser.gameId}</i>
+					</h2>
 					<h2>Giocatori connessi:</h2>
 					{players.map(player => (
 						<div className='playerCard' key={player}>

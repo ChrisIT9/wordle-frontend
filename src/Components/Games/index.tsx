@@ -24,20 +24,24 @@ export const GamesComponent: FC = () => {
 	const [lobbyCreationError, setLobbyCreationError] = useState(false);
 
 	const createLobby = async () => {
-		const response = await fetch(`${backendEndpoint}/games`, {
-			...getDefaultPostOptions(),
-		});
-		const { game } = (await response.json()) as {
-			game?: Game;
-			errors?: string[];
-		};
-		if (game) {
-			navigate(`/games/${game.gameId}/lobby`);
-		} else {
+		try {
+			const response = await fetch(`${backendEndpoint}/games`, {
+				...getDefaultPostOptions(),
+			});
+			const { game } = (await response.json()) as {
+				game?: Game;
+				errors?: string[];
+			};
+			if (game) {
+				navigate(`/games/${game.gameId}/lobby`);
+			} else {
+				setLobbyCreationError(true);
+			}
+		} catch (error) {
 			setLobbyCreationError(true);
 		}
 	};
-	
+
 	const logout = async () => {
 		try {
 			const response = await fetch(`${backendEndpoint}/auth/logout`, {
@@ -92,7 +96,7 @@ export const GamesComponent: FC = () => {
 
 	return (
 		<div className='gamesContainer'>
-			<h1>LOBBY APERTE</h1>
+			<h1 style={{ letterSpacing: '4px' }}>MORDLE</h1>
 			<Alert
 				severity='error'
 				sx={{
@@ -127,7 +131,14 @@ export const GamesComponent: FC = () => {
 				>
 					<LogoutIcon></LogoutIcon>
 				</Button>
-				<div style={{ display: 'flex', flexFlow: 'row nowrap', justifyContent: 'center', alignItems: 'center' }}>
+				<div
+					style={{
+						display: 'flex',
+						flexFlow: 'row nowrap',
+						justifyContent: 'center',
+						alignItems: 'center',
+					}}
+				>
 					<Button
 						variant='contained'
 						sx={{
