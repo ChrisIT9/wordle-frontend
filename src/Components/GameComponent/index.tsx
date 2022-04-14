@@ -28,7 +28,7 @@ import {
 } from '../../Utils/Requests';
 import { BoardComponent } from '../BoardComponent';
 import { backendEndpoint, socketEndpoint } from '../Environment';
-import { KeyboardComponent } from '../KeyboardComponent';
+import { MemoizedKeyboard } from '../KeyboardComponent';
 import './index.css';
 
 export const GameComponent: FC = () => {
@@ -310,8 +310,9 @@ export const GameComponent: FC = () => {
 			</Alert>
 			<Snackbar
 				open={invalidWord}
-				autoHideDuration={750}
+				autoHideDuration={500}
 				onClose={() => setInvalidWord(false)}
+				id='wordError'
 			>
 				<Alert severity='error' sx={{ width: '100%', fontWeight: 'bold' }}>
 					Parola non valida.
@@ -350,7 +351,7 @@ export const GameComponent: FC = () => {
 			</Modal>
 			<div
 				className='gameContainer'
-				style={{ display: gameJoinError ? 'none' : 'flex' }}
+				//style={{ display: gameJoinError ? 'none' : 'flex' }}
 			>
 				<div className='boardContainer' id='playerBoard'>
 					<h3>Tu</h3>
@@ -360,17 +361,17 @@ export const GameComponent: FC = () => {
 						currentIndex={playerMoves}
 					></BoardComponent>
 					<div className='keyboardContainer'>
-						<KeyboardComponent
+						<MemoizedKeyboard
 							keyboardStatus={keyboardStatus}
 							onClickFn={event =>
 								handleKeyPress({ code: event } as KeyboardEvent)
 							}
-						></KeyboardComponent>
+						></MemoizedKeyboard>
 					</div>
 				</div>
-				<div className='boardContainer' style={{ marginBottom: '15px' }}>
+				<div className='boardContainer' style={{ marginBottom: '15px' }} id='opponentBoard'>
 					<h3>Avversario</h3>
-					<BoardComponent board={opponentBoard}></BoardComponent>
+					<BoardComponent board={opponentBoard} opponentBoard={true}></BoardComponent>
 				</div>
 			</div>
 		</>

@@ -1,10 +1,10 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 import { KeyboardStatus, LetterPosition } from '../../Typings/Misc';
 import BackspaceIcon from '@mui/icons-material/Backspace';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import './index.css';
 
-export const KeyboardComponent: FC<{
+const KeyboardComponent: FC<{
 	keyboardStatus: KeyboardStatus;
 	onClickFn: (event: string) => void;
 }> = props => {
@@ -74,3 +74,5 @@ export const KeyboardComponent: FC<{
 		</div>
 	);
 };
+
+export const MemoizedKeyboard = memo(KeyboardComponent);

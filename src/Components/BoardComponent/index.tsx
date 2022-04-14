@@ -7,11 +7,12 @@ export const BoardComponent: FC<{
 	board: Board;
 	currentIndex?: number;
 	currentWord?: string;
+	opponentBoard?: boolean
 }> = props => {
-	const { board, currentWord, currentIndex } = props;
+	const { board, currentWord, currentIndex, opponentBoard } = props;
 	return (
 		<>
-			<div className='board'>
+			<div className='board' id={opponentBoard ? 'opponentBoard' : undefined}>
 				{Object.entries(board).map(
 					([wordIndex, wordPositions]: [
 						string,
@@ -20,7 +21,7 @@ export const BoardComponent: FC<{
 						<div className='row' key={wordIndex}>
 							{wordPositions.letterPositions.map((item, letterIndex) => {
 								return (
-									<div className={item.replaceAll(' ', '_')} key={letterIndex}>
+									<div className={'box ' + item.replaceAll(' ', '_')} key={letterIndex}>
 										{currentIndex != null &&
 										currentWord &&
 										currentIndex === Number(wordIndex)
