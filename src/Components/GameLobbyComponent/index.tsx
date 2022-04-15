@@ -242,7 +242,7 @@ export const GameLobbyComponent: FC = () => {
 							navigate('/games');
 						}}
 					>
-						<ArrowBackIcon></ArrowBackIcon> Indietro
+						<ArrowBackIcon></ArrowBackIcon> 
 					</Button>
 					<Button
 						variant='contained'

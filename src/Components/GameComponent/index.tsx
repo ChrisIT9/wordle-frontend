@@ -26,9 +26,10 @@ import {
 	getDefaultGetOptions,
 	getDefaultPostOptions,
 } from '../../Utils/Requests';
-import { BoardComponent } from '../BoardComponent';
+import { MemoizedBoard } from '../BoardComponent';
 import { backendEndpoint, socketEndpoint } from '../Environment';
 import { MemoizedKeyboard } from '../KeyboardComponent';
+import HomeIcon from '@mui/icons-material/Home';
 import './index.css';
 
 export const GameComponent: FC = () => {
@@ -287,6 +288,17 @@ export const GameComponent: FC = () => {
 
 	return (
 		<>
+			<Button
+				variant='contained'
+				className='homeButton'
+				sx={{ borderRadius: '50px', display: gameJoinError ? 'none' : 'flex' }}
+				onClick={() => {
+					socket?.disconnect();
+					navigate('/games');
+				}}
+			>
+				<HomeIcon></HomeIcon>
+			</Button>
 			<Alert
 				severity='error'
 				sx={{
@@ -330,7 +342,7 @@ export const GameComponent: FC = () => {
 					<Typography id='modal-modal-description' sx={{ mt: 2 }}>
 						{correctWord ? (
 							<span>
-								La parola era: <b>{correctWord}</b>.
+								La parola era <b>{correctWord}</b>.
 							</span>
 						) : (
 							<span>
@@ -351,15 +363,15 @@ export const GameComponent: FC = () => {
 			</Modal>
 			<div
 				className='gameContainer'
-				//style={{ display: gameJoinError ? 'none' : 'flex' }}
+				style={{ display: gameJoinError ? 'none' : 'flex' }}
 			>
 				<div className='boardContainer' id='playerBoard'>
 					<h3>Tu</h3>
-					<BoardComponent
+					<MemoizedBoard
 						board={playerBoard}
 						currentWord={currentWord}
 						currentIndex={playerMoves}
-					></BoardComponent>
+					></MemoizedBoard>
 					<div className='keyboardContainer'>
 						<MemoizedKeyboard
 							keyboardStatus={keyboardStatus}
@@ -369,9 +381,13 @@ export const GameComponent: FC = () => {
 						></MemoizedKeyboard>
 					</div>
 				</div>
-				<div className='boardContainer' style={{ marginBottom: '15px' }} id='opponentBoard'>
+				<div
+					className='boardContainer'
+					style={{ marginBottom: '15px' }}
+					id='opponentBoard'
+				>
 					<h3>Avversario</h3>
-					<BoardComponent board={opponentBoard} opponentBoard={true}></BoardComponent>
+					<MemoizedBoard board={opponentBoard} miniBoard={true}></MemoizedBoard>
 				</div>
 			</div>
 		</>

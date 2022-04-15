@@ -15,9 +15,9 @@ const KeyboardComponent: FC<{
 				{Object.entries(keyboardStatus).map(
 					([key, status]: [string, LetterPosition], index) => {
 						return index <= 9 ? (
-							<div className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
+							<button className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
 								{key}
-							</div>
+							</button>
 						) : (
 							''
 						);
@@ -28,9 +28,9 @@ const KeyboardComponent: FC<{
 				{Object.entries(keyboardStatus).map(
 					([key, status]: [string, LetterPosition], index) => {
 						return index > 9 && index <= 18 ? (
-							<div className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
+							<button className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
 								{key}
-							</div>
+							</button>
 						) : (
 							''
 						);
@@ -44,29 +44,29 @@ const KeyboardComponent: FC<{
 						if (index === 19)
 							return (
 								<>
-									<div className='key EMPTY_KEY' onClick={() => onClickFn('Enter')}>
+									<button className='key EMPTY_KEY' onClick={() => onClickFn('Enter')}>
 										<CheckCircleIcon></CheckCircleIcon>
-									</div>
-									<div className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
+									</button>
+									<button className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
 										{key}
-									</div>
+									</button>
 								</>
 							);
 						if (index === 25)
 							return (
 								<>
-									<div className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
+									<button className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
 										{key}
-									</div>
-									<div className='key EMPTY_KEY' onClick={() => onClickFn('Backspace')}>
+									</button>
+									<button className='key EMPTY_KEY' onClick={() => onClickFn('Backspace')}>
 										<BackspaceIcon></BackspaceIcon>
-									</div>
+									</button>
 								</>
 							);
 						return (
-							<div className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
+							<button className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
 								{key}
-							</div>
+							</button>
 						);
 					}
 				)}

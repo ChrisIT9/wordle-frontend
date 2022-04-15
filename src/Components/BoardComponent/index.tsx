@@ -1,18 +1,18 @@
-import { FC } from 'react';
+import { FC, memo } from 'react';
 
 import { Board, LetterPosition } from '../../Typings/Misc';
 import './index.css';
 
-export const BoardComponent: FC<{
+const BoardComponent: FC<{
 	board: Board;
 	currentIndex?: number;
 	currentWord?: string;
-	opponentBoard?: boolean
+	miniBoard?: boolean;
 }> = props => {
-	const { board, currentWord, currentIndex, opponentBoard } = props;
+	const { board, currentWord, currentIndex, miniBoard } = props;
 	return (
 		<>
-			<div className='board' id={opponentBoard ? 'opponentBoard' : undefined}>
+			<div className='board' id={miniBoard ? 'miniBoard' : undefined}>
 				{Object.entries(board).map(
 					([wordIndex, wordPositions]: [
 						string,
@@ -21,7 +21,10 @@ export const BoardComponent: FC<{
 						<div className='row' key={wordIndex}>
 							{wordPositions.letterPositions.map((item, letterIndex) => {
 								return (
-									<div className={'box ' + item.replaceAll(' ', '_')} key={letterIndex}>
+									<div
+										className={'box ' + item.replaceAll(' ', '_')}
+										key={letterIndex}
+									>
 										{currentIndex != null &&
 										currentWord &&
 										currentIndex === Number(wordIndex)
@@ -39,3 +42,5 @@ export const BoardComponent: FC<{
 		</>
 	);
 };
+
+export const MemoizedBoard = memo(BoardComponent);
