@@ -250,6 +250,7 @@ export const GameComponent: FC = () => {
 	};
 
 	const handleKeyPress = (event: KeyboardEvent) => {
+		'target' in event && event.code === 'Enter' && event.preventDefault();
 		if (playerMovesRef.current === 6 || gameIsOverRef.current) return;
 		if (event.code === 'Space') event.preventDefault();
 		if (event.code === 'Backspace' && currentWordRef.current) {

@@ -1,3 +1,5 @@
+import { Board } from "./Misc";
+
 export interface User {
 	username: string;
 	password: string;
@@ -20,3 +22,13 @@ export enum GameStatus {
   WON = 'WON',
   TIED = 'TIED'
 }
+
+export interface HistoryGame {
+	gameId: string,
+	opponent: string,
+	wordToFind: string,
+	gameResult: 'WON' | 'TIED' | 'LOST',
+	playerGuesses: Board,
+	opponentGuesses: Board,
+	date: string | undefined
+} 

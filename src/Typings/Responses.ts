@@ -1,3 +1,5 @@
+import { HistoryGame } from './Entitities';
+
 export interface LoginResponse {
 	errors?: string[];
 	username?: string;
@@ -7,12 +9,17 @@ export interface LoginResponse {
 export interface MeResponse {
 	username?: string;
 	isAdmin?: boolean;
-  errors?: string[];
+	errors?: string[];
 }
 
 export interface RegisterResponse {
 	username?: string;
 	isAdmin?: boolean;
-  errors?: string[];
+	errors?: string[];
 }
 
+export interface HistoryResponse {
+	games: HistoryGame[];
+	gamesWon: number;
+	gamesPlayed: number;
+}

@@ -4,7 +4,10 @@ import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addUsername, clearUsername } from '../../Store/User/User.actions';
 import { RegisterResponse, MeResponse } from '../../Typings/Responses';
-import { getDefaultGetOptions, getDefaultPostOptions } from '../../Utils/Requests';
+import {
+	getDefaultGetOptions,
+	getDefaultPostOptions,
+} from '../../Utils/Requests';
 import { backendEndpoint } from '../Environment';
 import CircularProgress from '@mui/material/CircularProgress';
 import './index.css';
@@ -36,7 +39,7 @@ export const RegisterComponent: FC = () => {
 	const checkMe = async () => {
 		try {
 			const response = await fetch(`${backendEndpoint}/auth/me`, {
-				...getDefaultGetOptions()
+				...getDefaultGetOptions(),
 			});
 			const { username } = (await response.json()) as MeResponse;
 			if (response.status === 200) {
@@ -82,7 +85,8 @@ export const RegisterComponent: FC = () => {
 				// prettier-ignore
 				(error.toLowerCase().includes('nome utente') || error.toLowerCase().includes('username')) && setUsernameError(error);
 				error.toLowerCase().includes('password') && setPasswordError(error);
-				error.toLowerCase().includes('password') && setPasswordConfirmationError(error);
+				error.toLowerCase().includes('password') &&
+					setPasswordConfirmationError(error);
 			} else if (username) {
 				setHasSignedUp(true);
 				setTimeout(navigate, 1000, '/login');
@@ -121,6 +125,7 @@ export const RegisterComponent: FC = () => {
 					label='Username'
 					variant='filled'
 					autoComplete='off'
+					inputProps={{ maxLength: 20 }}
 					sx={{
 						marginBottom: 2.5,
 						input: { color: 'white' },
@@ -175,11 +180,28 @@ export const RegisterComponent: FC = () => {
 					error={!!passwordConfirmationError}
 					helperText={passwordConfirmationError}
 				/>
-				<Button variant='contained' sx={{ width: '100%', borderRadius: '50px', marginBottom: '25px' }} onClick={register}>
-					{waitingForResponse ? <CircularProgress sx={{ color: 'white' }}/> : 'Registrati'}
+				<Button
+					variant='contained'
+					sx={{ width: '100%', borderRadius: '50px', marginBottom: '25px' }}
+					onClick={register}
+				>
+					{waitingForResponse ? (
+						<CircularProgress sx={{ color: 'white' }} />
+					) : (
+						'Registrati'
+					)}
 				</Button>
 				Sei già un utente?
-				<Button variant='contained' sx={{ width: '100%', borderRadius: '50px', marginTop: '5px', backgroundColor: '#0a5a10' }} onClick={() => navigate('/login')}>
+				<Button
+					variant='contained'
+					sx={{
+						width: '100%',
+						borderRadius: '50px',
+						marginTop: '5px',
+						backgroundColor: '#0a5a10',
+					}}
+					onClick={() => navigate('/login')}
+				>
 					Accedi
 				</Button>
 			</div>

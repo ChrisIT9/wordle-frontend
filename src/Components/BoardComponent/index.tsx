@@ -12,7 +12,7 @@ const BoardComponent: FC<{
 	const { board, currentWord, currentIndex, miniBoard } = props;
 	return (
 		<>
-			<div className='board' id={miniBoard ? 'miniBoard' : undefined}>
+			<div className={`board ${miniBoard ? 'miniBoard' : ''}`}>
 				{Object.entries(board).map(
 					([wordIndex, wordPositions]: [
 						string,

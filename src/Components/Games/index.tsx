@@ -13,6 +13,7 @@ import { backendEndpoint } from '../Environment';
 import { LobbyCard } from '../LobbyCard';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import './index.css';
 
 export const GamesComponent: FC = () => {
@@ -163,6 +164,19 @@ export const GamesComponent: FC = () => {
 						onClick={fetchLobbies}
 					>
 						<RefreshIcon sx={{ color: 'white' }}></RefreshIcon>
+					</Button>
+					<Button
+						variant='contained'
+						sx={{
+							alignSelf: 'end',
+							backgroundColor: '#0a5a10',
+							display: serverUnreachable ? 'none' : 'flex',
+							borderRadius: '50px',
+							marginLeft: '5px',
+						}}
+						onClick={() => navigate('/matchHistory')}
+					>
+						<AccountCircleRoundedIcon></AccountCircleRoundedIcon>
 					</Button>
 				</div>
 			</div>

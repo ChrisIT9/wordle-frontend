@@ -11,6 +11,7 @@ import { GamesComponent } from './Components/Games';
 import { GameLobbyComponent } from './Components/GameLobbyComponent';
 import { GameComponent } from './Components/GameComponent';
 import { createTheme, ThemeProvider } from '@mui/material';
+import { MemoizedHistory } from './Components/HistoryComponent';
 
 const theme = createTheme({
 	typography: {
@@ -44,6 +45,10 @@ ReactDOM.render(
 						<Route
 							path='/games/:gameId/lobby'
 							element={<GameLobbyComponent />}
+						/>
+						<Route
+							path='/matchHistory'
+							element={<MemoizedHistory />}
 						/>
 					</Routes>
 				</BrowserRouter>

@@ -111,6 +111,7 @@ export const LoginComponent: FC = () => {
 					label='Username'
 					variant='filled'
 					autoComplete='off'
+					inputProps={{ maxLength: 20 }}
 					sx={{
 						marginBottom: 2.5,
 						input: { color: 'white' },

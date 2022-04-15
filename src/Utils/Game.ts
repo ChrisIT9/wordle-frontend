@@ -73,6 +73,19 @@ export const generateKeyboardStatus = (): KeyboardStatus => {
 	};
 };
 
+export const getTranslatedResult = (result: 'WON' | 'TIED' | 'LOST') => {
+	switch(result) {
+		case 'WON':
+			return 'Vittoria';
+		case 'TIED':
+			return 'Pareggio';
+		case 'LOST':
+			return 'Sconfitta'
+		default:
+			return result;
+	}
+}
+
 export const resultModalStyle = {
 	position: 'absolute' as 'absolute',
 	top: '50%',

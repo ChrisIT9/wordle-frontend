@@ -46,10 +46,15 @@
     margin: 5px;
   }
 
-  div#miniBoard .box {
-    width: 15px;
-    height: 15px;
+  .EMPTY {
+    border: 1.25px solid #3a3a3c;
+  }
+
+  div.board.miniBoard .box {
+    width: 20px;
+    height: 20px;
     margin: 1.5px;
+    font-size: 0.85rem;
   }
 
   .box {
