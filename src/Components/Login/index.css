@@ -1,6 +1,6 @@
 .login {
 	display: flex;
-	flex-flow: column wrap;
+	flex-flow: column nowrap;
 	justify-content: space-between;
 	align-items: center;
 	border-radius: 10px;
