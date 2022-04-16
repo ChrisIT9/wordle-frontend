@@ -44,7 +44,7 @@ const KeyboardComponent: FC<{
 						if (index === 19)
 							return (
 								<>
-									<button className='key EMPTY_KEY' onClick={() => onClickFn('Enter')}>
+									<button className='key EMPTY_KEY special' onClick={() => onClickFn('Enter')}>
 										<CheckCircleIcon></CheckCircleIcon>
 									</button>
 									<button className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
@@ -58,7 +58,7 @@ const KeyboardComponent: FC<{
 									<button className={`key ${status.replaceAll(' ', '_') + '_KEY'}`} onClick={() => onClickFn(`Key${key}`)}>
 										{key}
 									</button>
-									<button className='key EMPTY_KEY' onClick={() => onClickFn('Backspace')}>
+									<button className='key EMPTY_KEY special' onClick={() => onClickFn('Backspace')}>
 										<BackspaceIcon></BackspaceIcon>
 									</button>
 								</>

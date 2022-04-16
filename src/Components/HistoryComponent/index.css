@@ -80,7 +80,7 @@
 }
 
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 1400px) {
   .gameHistoryItem {
     width: 100%;
   }

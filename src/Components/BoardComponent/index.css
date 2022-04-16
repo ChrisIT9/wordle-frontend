@@ -43,7 +43,7 @@
 
 @media screen and (max-width: 768px) {
   h3 {
-    margin: 5px;
+    margin: 2.5px;
   }
 
   .EMPTY {
@@ -58,8 +58,8 @@
   }
 
   .box {
-    width: 45px;
-    height: 45px;
-    font-size: 1.75rem;
+    width: 42.5px;
+    height: 42.5px;
+    font-size: 1.65rem;
   }
 }
