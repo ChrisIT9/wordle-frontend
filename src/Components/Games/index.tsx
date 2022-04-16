@@ -1,4 +1,12 @@
-import { Alert, Button, CircularProgress, Snackbar } from '@mui/material';
+import {
+	Alert,
+	Box,
+	Button,
+	CircularProgress,
+	Modal,
+	Snackbar,
+	TextField,
+} from '@mui/material';
 import { FC, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +23,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AccountCircleRoundedIcon from '@mui/icons-material/AccountCircleRounded';
 import './index.css';
+import { passwordModalStyle } from '../../Utils/Game';
 
 export const GamesComponent: FC = () => {
 	const dispatch = useDispatch();
@@ -23,17 +32,23 @@ export const GamesComponent: FC = () => {
 	const [serverUnreachable, setServerUnreachable] = useState(false);
 	const [waitingForResponse, setWaitingForResponse] = useState(false);
 	const [lobbyCreationError, setLobbyCreationError] = useState(false);
+	const [password, setPassword] = useState(undefined as string | undefined);
+	const [createLobbyModal, setCreateLobbyModal] = useState(false);
 
 	const createLobby = async () => {
 		try {
 			const response = await fetch(`${backendEndpoint}/games`, {
 				...getDefaultPostOptions(),
+				body: new URLSearchParams({
+					password: password || ''
+				}).toString()
 			});
 			const { game } = (await response.json()) as {
 				game?: Game;
 				errors?: string[];
 			};
 			if (game) {
+				setCreateLobbyModal(false);
 				navigate(`/games/${game.gameId}/lobby`);
 			} else {
 				setLobbyCreationError(true);
@@ -98,6 +113,46 @@ export const GamesComponent: FC = () => {
 	return (
 		<div className='gamesContainer'>
 			<h1 style={{ letterSpacing: '4px' }}>MORDLE</h1>
+			<Modal
+				open={createLobbyModal}
+			>
+				<Box sx={passwordModalStyle}>
+					<TextField
+						label='Password (opzionale)'
+						variant='outlined'
+						type='password'
+						sx={{
+							input: { color: '#D1DEDE' },
+							label: { color: '#D1DEDE', fontWeight: 'bold' },
+							backgroundColor: 'rgba(12, 59, 105, 0.35)',
+							borderRadius: '5px',
+							width: '100%'
+						}}
+						onChange={(event) => setPassword(event.target.value)}
+						onKeyDown={({ code }) => code === 'Enter' && createLobby()}
+					/>
+					<Button
+						variant='contained'
+						sx={{
+							backgroundColor: '#0a5a10',
+							display: serverUnreachable ? 'none' : 'flex',
+							borderRadius: '50px',
+							marginTop: '10px'
+						}}
+						onClick={createLobby}
+					>{password && password.length > 0 ? 'Crea' : 'Salta'}</Button>
+					<Button
+						variant='contained'
+						sx={{
+							backgroundColor: '#a30b0b',
+							display: serverUnreachable ? 'none' : 'flex',
+							borderRadius: '50px',
+							marginTop: '10px'
+						}}
+						onClick={() => {setCreateLobbyModal(false)}}
+					>Annulla</Button>
+				</Box>
+			</Modal>
 			<Alert
 				severity='error'
 				sx={{
@@ -148,7 +203,7 @@ export const GamesComponent: FC = () => {
 							display: serverUnreachable ? 'none' : 'flex',
 							borderRadius: '50px',
 						}}
-						onClick={createLobby}
+						onClick={() => {setCreateLobbyModal(true)}}
 					>
 						Crea partita
 					</Button>

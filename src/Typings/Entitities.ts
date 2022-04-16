@@ -14,6 +14,7 @@ export interface Game {
 	word: string;
 	moves: string[];
 	host: string;
+	password: string | undefined;
 }
 
 export enum GameStatus {

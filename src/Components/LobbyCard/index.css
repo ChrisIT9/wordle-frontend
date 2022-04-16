@@ -1,0 +1,10 @@
+.MuiFormHelperText-root {
+  font-weight: bold !important;
+  font-size: 0.8rem !important;
+  color: #D1DEDE !important;
+}
+
+.MuiFormHelperText-root.Mui-error {
+  
+  color: #d32f2f !important;
+}

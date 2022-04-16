@@ -128,8 +128,8 @@ export const RegisterComponent: FC = () => {
 					inputProps={{ maxLength: 20 }}
 					sx={{
 						marginBottom: 2.5,
-						input: { color: 'white' },
-						label: { color: 'white', fontWeight: 'bold' },
+						input: { color: '#D1DEDE' },
+						label: { color: '#D1DEDE', fontWeight: 'bold' },
 					}}
 					onChange={({ target: { value } }) => {
 						setUsername(value);
@@ -147,8 +147,8 @@ export const RegisterComponent: FC = () => {
 					label='Password'
 					variant='filled'
 					sx={{
-						input: { color: 'white' },
-						label: { color: 'white', fontWeight: 'bold' },
+						input: { color: '#D1DEDE' },
+						label: { color: '#D1DEDE', fontWeight: 'bold' },
 						marginBottom: 2.5,
 					}}
 					onChange={({ target: { value } }) => {
@@ -167,8 +167,8 @@ export const RegisterComponent: FC = () => {
 					label='Conferma password'
 					variant='filled'
 					sx={{
-						input: { color: 'white' },
-						label: { color: 'white', fontWeight: 'bold' },
+						input: { color: '#D1DEDE' },
+						label: { color: '#D1DEDE', fontWeight: 'bold' },
 						marginBottom: 2.5,
 					}}
 					onChange={({ target: { value } }) => {

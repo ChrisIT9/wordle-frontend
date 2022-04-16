@@ -99,3 +99,22 @@ export const resultModalStyle = {
 	borderRadius: '10px',
 	outline: 0,
 };
+
+export const passwordModalStyle = {
+	position: 'absolute' as 'absolute',
+	top: '50%',
+	left: '50%',
+	transform: 'translate(-50%, -50%)',
+	bgcolor: '#121213',
+	border: '2px solid #000',
+	boxShadow: 24,
+	padding: '15px 10px',
+	borderRadius: '10px',
+	width: '90%',
+	maxWidth: '350px',
+	outline: 0,
+	display: 'flex',
+	flexFlow: 'column wrap',
+	justifyContent: 'space-evenly',
+	alignItems: 'flex-end'
+};
