@@ -15,6 +15,7 @@ import { Game } from '../../Typings/Entitities';
 import { Alert, Button, Snackbar } from '@mui/material';
 import { SocketEvent } from '../../Typings/Misc';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import LockIcon from '@mui/icons-material/Lock';
 
 export const GameLobbyComponent: FC = () => {
 	const dispatch = useDispatch();
@@ -38,6 +39,7 @@ export const GameLobbyComponent: FC = () => {
 	const playersRef = useRef<string[]>();
 	playersRef.current = players;
 	const [gameStartError, setGameStartError] = useState(false);
+	const [isPasswordProtected, setIsPasswordProtected] = useState(false);
 
 	window.addEventListener('popstate', () => {
 		if (socketRef.current?.connected) socketRef.current?.disconnect();
@@ -76,6 +78,7 @@ export const GameLobbyComponent: FC = () => {
 				setIsHost(isGameHost);
 				setGameHost(game.host);
 				setGameIdAndUser({ gameId: game.gameId, user });
+				setIsPasswordProtected(!!game.password);
 			} else if (errors) {
 				const [error] = errors;
 				setLobbyError(true);
@@ -260,8 +263,9 @@ export const GameLobbyComponent: FC = () => {
 					</Button>
 				</div>
 				<div className='lobbyScreen'>
+					{isPasswordProtected ? <LockIcon sx={{ marginBottom: '5px', marginTop: '5px' }}></LockIcon> : undefined}
 					<h2>
-						ID Partita: <i>{gameIdAndUser.gameId}</i>
+						ID: <i>{gameIdAndUser.gameId}</i>
 					</h2>
 					<h2>Giocatori connessi:</h2>
 					{players.map(player => (

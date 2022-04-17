@@ -10,7 +10,7 @@ import {
 	TextField,
 	Typography,
 } from '@mui/material';
-import { FC, useState } from 'react';
+import { FC, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Game } from '../../Typings/Entitities';
 import { getDefaultPostOptions } from '../../Utils/Requests';
@@ -26,10 +26,17 @@ export const LobbyCard: FC<{ game: Game }> = props => {
 		undefined as string | undefined
 	);
 	const [password, setPassword] = useState(undefined as string | undefined);
+	const passwordRef = useRef<string | undefined>();
+	passwordRef.current = password;
 	const [joinLobbyModal, setJoinLobbyModal] = useState(false);
 	const navigate = useNavigate();
 
 	const joinLobby = async (gameId: string) => {
+		if (game.password && !passwordRef.current) {
+			setJoinError(true);
+			setJoinErrorMessage('Fornire una password!');
+			return;
+		}
 		setJoinError(false);
 		setJoinErrorMessage(undefined);
 		try {

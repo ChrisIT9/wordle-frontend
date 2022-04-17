@@ -67,7 +67,7 @@ export const RegisterComponent: FC = () => {
 			if (!providedUsername || !providedPassword || !providedPasswordConfirmation) {
 				!providedUsername && setUsernameError('Inserisci uno username!');
 				!providedPassword && setPasswordError('Inserisci una password!');
-				!providedPasswordConfirmation && setPasswordConfirmationError('Inserisci una password'); 
+				!providedPasswordConfirmation && setPasswordConfirmationError('Inserisci una password!'); 
 				return;
 			}
 			setWaitingForResponse(true);
