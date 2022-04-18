@@ -54,18 +54,22 @@ const HistoryComponent: FC = () => {
 	};
 
 	const checkMe = async () => {
+		setWaitingForResponse(true);
 		try {
 			const response = await fetch(`${backendEndpoint}/auth/me`, {
 				...getDefaultGetOptions(),
 			});
 			const { username } = (await response.json()) as MeResponse;
 			if (response.status === 200) {
+				setWaitingForResponse(false);
 				username && dispatch(addUsername(username)) && getHistory();
 			} else {
+				setWaitingForResponse(false);
 				dispatch(clearUsername());
 				navigate('/login');
 			}
 		} catch (error) {
+			setWaitingForResponse(false);
 			setServerUnreachable(true);
 			dispatch(clearUsername());
 		}
@@ -91,7 +95,17 @@ const HistoryComponent: FC = () => {
 				className='gameHistoryContainer'
 				style={{ display: serverUnreachable ? 'none' : 'flex' }}
 			>
-				<div className='playerSummary'>
+				<CircularProgress
+					sx={{
+						color: '#D1DEDE',
+						display: waitingForResponse ? 'inline-block' : 'none',
+						margin: '5px',
+					}}
+				/>
+				<div
+					className='playerSummary'
+					style={{ display: waitingForResponse ? 'none' : 'flex' }}
+				>
 					<Button
 						variant='contained'
 						sx={{
@@ -104,13 +118,6 @@ const HistoryComponent: FC = () => {
 					>
 						<ArrowBackRoundedIcon></ArrowBackRoundedIcon>
 					</Button>
-					<CircularProgress
-						sx={{
-							color: 'white',
-							display: waitingForResponse ? 'block' : 'none',
-							margin: '5px',
-						}}
-					/>
 					<h1 style={{ marginTop: '35px' }}>
 						Statistiche per <i>{username}</i>
 					</h1>
@@ -137,18 +144,13 @@ const HistoryComponent: FC = () => {
 						<span>
 							Percentuale di vittoria:{' '}
 							<b>
-								{gamesPlayed > 0 ? `${Math.round((gamesWon / gamesPlayed) * 100)}%` : 'N/D'}
+								{gamesPlayed > 0
+									? `${Math.round((gamesWon / gamesPlayed) * 100)}%`
+									: 'N/D'}
 							</b>
 						</span>
 					</div>
 				</div>
-				<CircularProgress
-					sx={{
-						color: 'white',
-						display: waitingForResponse ? 'block' : 'none',
-						margin: '5px',
-					}}
-				/>
 				{games.length > 0 ? (
 					games.map(game => {
 						return (
@@ -198,8 +200,12 @@ const HistoryComponent: FC = () => {
 							</div>
 						);
 					})
+				) : !waitingForResponse ? (
+					<h1 style={{ textAlign: 'center' }}>
+						Non hai ancora giocato una partita :(
+					</h1>
 				) : (
-					<h1 style={{ textAlign: 'center' }}>Non hai ancora giocato una partita :(</h1>
+					''
 				)}
 			</div>
 		</>

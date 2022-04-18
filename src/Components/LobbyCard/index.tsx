@@ -9,6 +9,7 @@ import {
 	Snackbar,
 	TextField,
 	Typography,
+	CircularProgress
 } from '@mui/material';
 import { FC, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -29,6 +30,7 @@ export const LobbyCard: FC<{ game: Game }> = props => {
 	const passwordRef = useRef<string | undefined>();
 	passwordRef.current = password;
 	const [joinLobbyModal, setJoinLobbyModal] = useState(false);
+	const [waitingForLobby, setWaitingForLobby] = useState(false);
 	const navigate = useNavigate();
 
 	const joinLobby = async (gameId: string) => {
@@ -37,6 +39,7 @@ export const LobbyCard: FC<{ game: Game }> = props => {
 			setJoinErrorMessage('Fornire una password!');
 			return;
 		}
+		setWaitingForLobby(true);
 		setJoinError(false);
 		setJoinErrorMessage(undefined);
 		try {
@@ -56,14 +59,17 @@ export const LobbyCard: FC<{ game: Game }> = props => {
 				errors?: string[];
 			};
 			if (game) {
+				setWaitingForLobby(false);
 				setJoinError(false);
 				setJoinLobbyModal(false);
 				navigate(`/games/${gameId}/lobby`);
 			} else {
+				setWaitingForLobby(false);
 				setJoinErrorMessage(message);
 				setJoinError(true);
 			}
 		} catch (error) {
+			setWaitingForLobby(false);
 			setJoinError(true);
 		}
 	};
@@ -99,7 +105,7 @@ export const LobbyCard: FC<{ game: Game }> = props => {
 							joinLobby(game.gameId);
 						}}
 					>
-						Unisciti
+						{waitingForLobby ? <CircularProgress sx={{ color: '#D1DEDE' }} /> : 'Unisciti'}
 					</Button>
 					<Button
 						variant='contained'

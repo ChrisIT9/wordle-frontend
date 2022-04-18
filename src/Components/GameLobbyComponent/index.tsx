@@ -16,6 +16,7 @@ import { Alert, Button, Snackbar } from '@mui/material';
 import { SocketEvent } from '../../Typings/Misc';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import LockIcon from '@mui/icons-material/Lock';
+import { CircularProgress } from '@mui/material';
 
 export const GameLobbyComponent: FC = () => {
 	const dispatch = useDispatch();
@@ -40,6 +41,7 @@ export const GameLobbyComponent: FC = () => {
 	playersRef.current = players;
 	const [gameStartError, setGameStartError] = useState(false);
 	const [isPasswordProtected, setIsPasswordProtected] = useState(false);
+	const [waitingForLobby, setWaitingForLobby] = useState(false);
 
 	window.addEventListener('popstate', () => {
 		if (socketRef.current?.connected) socketRef.current?.disconnect();
@@ -47,6 +49,7 @@ export const GameLobbyComponent: FC = () => {
 
 	const checkLobby = async (user: string) => {
 		setLobbyError(false);
+		setWaitingForLobby(true);
 		try {
 			const response = await fetch(
 				`${backendEndpoint}/games/${receivedGameId}/lobby`,
@@ -74,6 +77,7 @@ export const GameLobbyComponent: FC = () => {
 				isHost?: boolean;
 			};
 			if (game && isGameHost != null) {
+				setWaitingForLobby(false);
 				setPlayers(game.players);
 				setIsHost(isGameHost);
 				setGameHost(game.host);
@@ -81,16 +85,19 @@ export const GameLobbyComponent: FC = () => {
 				setIsPasswordProtected(!!game.password);
 			} else if (errors) {
 				const [error] = errors;
+				setWaitingForLobby(false);
 				setLobbyError(true);
 				setLobbyErrorMessage(error || 'Impossibile connettersi alla lobby!');
 			}
 		} catch (error) {
+			setWaitingForLobby(false);
 			setLobbyError(true);
 			setLobbyErrorMessage('Il server non è raggiungibile!');
 		}
 	};
 
 	const startGame = async () => {
+		setWaitingForLobby(true);
 		setGameStartError(false);
 		try {
 			const response = await fetch(
@@ -102,9 +109,11 @@ export const GameLobbyComponent: FC = () => {
 			);
 			if (response.status !== 200) {
 				setGameStartError(true);
+				setWaitingForLobby(false);
 			}
 		} catch (error) {
 			setGameStartError(true);
+			setWaitingForLobby(false);
 		}
 	};
 
@@ -160,18 +169,22 @@ export const GameLobbyComponent: FC = () => {
 	};
 
 	const checkMe = async () => {
+		setWaitingForLobby(true);
 		try {
 			const response = await fetch(`${backendEndpoint}/auth/me`, {
 				...getDefaultGetOptions(),
 			});
 			const { username } = (await response.json()) as MeResponse;
 			if (response.status === 200) {
+				setWaitingForLobby(false);
 				username && dispatch(addUsername(username)) && checkLobby(username);
 			} else {
+				setWaitingForLobby(false);
 				dispatch(clearUsername());
 				navigate('/login');
 			}
 		} catch (error) {
+			setWaitingForLobby(false);
 			setServerUnreachable(true);
 			dispatch(clearUsername());
 		}
@@ -232,6 +245,7 @@ export const GameLobbyComponent: FC = () => {
 					textAlign: 'center',
 				}}
 			>
+				<CircularProgress style={{ color: '#D1DEDE', display: waitingForLobby ? 'inline-block' : 'none' }} />
 				<div className='lobbyNavbar'>
 					<Button
 						variant='contained'
@@ -239,6 +253,7 @@ export const GameLobbyComponent: FC = () => {
 							alignSelf: 'start',
 							backgroundColor: '#0a5a10',
 							borderRadius: '50px',
+							display: waitingForLobby ? 'none' : 'flex'
 						}}
 						onClick={() => {
 							socket?.disconnect();
@@ -253,7 +268,7 @@ export const GameLobbyComponent: FC = () => {
 							alignSelf: 'end',
 							backgroundColor: '#0a5a10',
 							display:
-								!serverUnreachable && isHost && !lobbyError ? 'flex' : 'none',
+								!serverUnreachable && isHost && !lobbyError && !waitingForLobby? 'flex' : 'none',
 							borderRadius: '50px',
 						}}
 						disabled={players.length < 2}
@@ -262,7 +277,7 @@ export const GameLobbyComponent: FC = () => {
 						Inizia partita
 					</Button>
 				</div>
-				<div className='lobbyScreen'>
+				<div className='lobbyScreen' style={{ display: waitingForLobby ? 'none' : 'flex' }}>
 					{isPasswordProtected ? <LockIcon sx={{ marginBottom: '5px', marginTop: '5px' }}></LockIcon> : undefined}
 					<h2>
 						ID: <i>{gameIdAndUser.gameId}</i>

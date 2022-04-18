@@ -1,7 +1,16 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable array-callback-return */
 /* eslint-disable eqeqeq */
-import { Alert, Box, Button, Modal, Snackbar, Typography } from '@mui/material';
+import {
+	Alert,
+	Box,
+	Button,
+	Modal,
+	Snackbar,
+	Typography,
+	CircularProgress,
+	LinearProgress,
+} from '@mui/material';
 import { FC, useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useParams } from 'react-router-dom';
@@ -77,12 +86,15 @@ export const GameComponent: FC = () => {
 	const dispatch = useDispatch();
 	const navigate = useNavigate();
 	const { username } = useSelector(userSelector);
+	const [waitingForGame, setWaitingForGame] = useState(false);
+	const [waitingForWordResponse, setWaitingForWordResponse] = useState(false);
 
 	const handlePopState = () => {
 		if (socketRef.current?.connected) socketRef.current?.disconnect();
 	};
 
 	const sendWord = async () => {
+		setWaitingForWordResponse(true);
 		setInvalidWord(false);
 		if (!currentWordRef.current) return;
 		try {
@@ -97,6 +109,7 @@ export const GameComponent: FC = () => {
 				}
 			);
 			if (response.status === 400) {
+				setWaitingForWordResponse(false);
 				setInvalidWord(true);
 				return;
 			}
@@ -105,6 +118,7 @@ export const GameComponent: FC = () => {
 				hasWon: boolean;
 			};
 			if (board && playerMovesRef.current != undefined) {
+				setWaitingForWordResponse(false);
 				currentWordRef.current.split('').map((letter, index) => {
 					if (!keyboardStatusRef.current) return null;
 					if (
@@ -130,29 +144,34 @@ export const GameComponent: FC = () => {
 				setPlayerMoves(playerMovesRef.current + 1);
 			}
 		} catch (error) {
-			// error handling
+			setWaitingForWordResponse(false);
 		}
 	};
 
 	const checkMe = async () => {
+		setWaitingForGame(true);
 		try {
 			const response = await fetch(`${backendEndpoint}/auth/me`, {
 				...getDefaultGetOptions(),
 			});
 			const { username } = (await response.json()) as MeResponse;
 			if (response.status === 200) {
+				setWaitingForGame(false);
 				username && dispatch(addUsername(username)) && checkGame(username);
 			} else {
+				setWaitingForGame(false);
 				dispatch(clearUsername());
 				navigate('/login');
 			}
 		} catch (error) {
+			setWaitingForGame(false);
 			setServerUnreachable(true);
 			dispatch(clearUsername());
 		}
 	};
 
 	const checkGame = async (user: string) => {
+		setWaitingForGame(true);
 		setGameJoinError(false);
 		try {
 			const response = await fetch(
@@ -162,6 +181,7 @@ export const GameComponent: FC = () => {
 				}
 			);
 			if (response.status === 404) {
+				setWaitingForGame(false);
 				setGameJoinError(true);
 				setGameJoinErrorMessage('Non esiste nessuna partita per questo ID');
 				return;
@@ -170,8 +190,10 @@ export const GameComponent: FC = () => {
 				| Game
 				| { errors?: string[]; message?: string };
 			if (response.status === 200) {
+				setWaitingForGame(false);
 				setGameIdAndUser({ gameId: (responseBody as Game).gameId, user });
 			} else {
+				setWaitingForGame(false);
 				setGameJoinError(true);
 				if ('errors' in responseBody && responseBody.errors) {
 					setGameJoinErrorMessage(responseBody.errors[0]);
@@ -180,6 +202,7 @@ export const GameComponent: FC = () => {
 				}
 			}
 		} catch (error) {
+			setWaitingForGame(false);
 			setGameJoinError(true);
 			setGameJoinErrorMessage('Il server non è raggiungibile!');
 		}
@@ -362,17 +385,38 @@ export const GameComponent: FC = () => {
 					</Typography>
 				</Box>
 			</Modal>
+
 			<div
 				className='gameContainer'
 				style={{ display: gameJoinError ? 'none' : 'flex' }}
 			>
-				<div className='boardContainer' id='playerBoard'>
+				<CircularProgress
+					style={{
+						color: '#D1DEDE',
+						display: waitingForGame ? 'inline-block' : 'none',
+					}}
+				/>
+				<div
+					className='boardContainer'
+					id='playerBoard'
+					style={{ display: waitingForGame ? 'none' : 'block' }}
+				>
 					<h3>Tu</h3>
 					<MemoizedBoard
 						board={playerBoard}
 						currentWord={currentWord}
 						currentIndex={playerMoves}
 					></MemoizedBoard>
+					<LinearProgress
+						sx={{
+							color: '#D1DEDE',
+							opacity: waitingForWordResponse ? '1' : '0',
+							borderRadius: '10px',
+							width: '50%',
+							margin: '2.5px auto 0px auto',
+							background: 'none'
+						}}
+					></LinearProgress>
 					<div className='keyboardContainer'>
 						<MemoizedKeyboard
 							keyboardStatus={keyboardStatus}
@@ -384,7 +428,10 @@ export const GameComponent: FC = () => {
 				</div>
 				<div
 					className='boardContainer'
-					style={{ marginBottom: '15px' }}
+					style={{
+						marginBottom: '15px',
+						display: waitingForGame ? 'none' : 'block',
+					}}
 					id='opponentBoard'
 				>
 					<h3>Avversario</h3>

@@ -31,30 +31,35 @@ export const GamesComponent: FC = () => {
 	const [lobbies, setLobbies] = useState([] as Game[]);
 	const [serverUnreachable, setServerUnreachable] = useState(false);
 	const [waitingForResponse, setWaitingForResponse] = useState(false);
+	const [waitingForLobby, setWaitingForLobby] = useState(false);
 	const [lobbyCreationError, setLobbyCreationError] = useState(false);
 	const [password, setPassword] = useState(undefined as string | undefined);
 	const [createLobbyModal, setCreateLobbyModal] = useState(false);
 
 	const createLobby = async () => {
+		setWaitingForLobby(true);
 		try {
 			const response = await fetch(`${backendEndpoint}/games`, {
 				...getDefaultPostOptions(),
 				body: new URLSearchParams({
-					password: password || ''
-				}).toString()
+					password: password || '',
+				}).toString(),
 			});
 			const { game } = (await response.json()) as {
 				game?: Game;
 				errors?: string[];
 			};
 			if (game) {
+				setWaitingForLobby(false);
 				setCreateLobbyModal(false);
 				navigate(`/games/${game.gameId}/lobby`);
 			} else {
 				setLobbyCreationError(true);
+				setWaitingForLobby(false);
 			}
 		} catch (error) {
 			setLobbyCreationError(true);
+			setWaitingForLobby(false);
 		}
 	};
 
@@ -113,9 +118,7 @@ export const GamesComponent: FC = () => {
 	return (
 		<div className='gamesContainer'>
 			<h1 style={{ letterSpacing: '4px' }}>MORDLE</h1>
-			<Modal
-				open={createLobbyModal}
-			>
+			<Modal open={createLobbyModal}>
 				<Box sx={passwordModalStyle}>
 					<TextField
 						label='Password (opzionale)'
@@ -126,9 +129,9 @@ export const GamesComponent: FC = () => {
 							label: { color: '#D1DEDE', fontWeight: 'bold' },
 							backgroundColor: 'rgba(12, 59, 105, 0.35)',
 							borderRadius: '5px',
-							width: '100%'
+							width: '100%',
 						}}
-						onChange={(event) => setPassword(event.target.value)}
+						onChange={event => setPassword(event.target.value)}
 						onKeyDown={({ code }) => code === 'Enter' && createLobby()}
 					/>
 					<Button
@@ -137,20 +140,32 @@ export const GamesComponent: FC = () => {
 							backgroundColor: '#0a5a10',
 							display: serverUnreachable ? 'none' : 'flex',
 							borderRadius: '50px',
-							marginTop: '10px'
+							marginTop: '10px',
 						}}
 						onClick={createLobby}
-					>{password && password.length > 0 ? 'Crea' : 'Salta'}</Button>
+					>
+						{waitingForLobby ? (
+							<CircularProgress sx={{ color: '#D1DEDE' }} />
+						) : password && password.length > 0 ? (
+							'Crea'
+						) : (
+							'Salta'
+						)}
+					</Button>
 					<Button
 						variant='contained'
 						sx={{
 							backgroundColor: '#a30b0b',
 							display: serverUnreachable ? 'none' : 'flex',
 							borderRadius: '50px',
-							marginTop: '10px'
+							marginTop: '10px',
 						}}
-						onClick={() => {setCreateLobbyModal(false)}}
-					>Annulla</Button>
+						onClick={() => {
+							setCreateLobbyModal(false);
+						}}
+					>
+						Annulla
+					</Button>
 				</Box>
 			</Modal>
 			<Alert
@@ -203,7 +218,9 @@ export const GamesComponent: FC = () => {
 							display: serverUnreachable ? 'none' : 'flex',
 							borderRadius: '50px',
 						}}
-						onClick={() => {setCreateLobbyModal(true)}}
+						onClick={() => {
+							setCreateLobbyModal(true);
+						}}
 					>
 						Crea partita
 					</Button>
@@ -246,10 +263,14 @@ export const GamesComponent: FC = () => {
 					lobbies.map(lobby => (
 						<LobbyCard game={lobby} key={lobby.gameId}></LobbyCard>
 					))
-				) : serverUnreachable ? (
-					<h2>Il server non è raggiungibile.</h2>
+				) : !waitingForResponse ? (
+					serverUnreachable ? (
+						<h2>Il server non è raggiungibile.</h2>
+					) : (
+						<h2>Nessuno ha ancora creato una partita, sii il primo!</h2>
+					)
 				) : (
-					<h2>Nessuno ha ancora creato una partita, sii il primo!</h2>
+					''
 				)}
 			</div>
 		</div>
