@@ -69,7 +69,6 @@ export const GameComponent: FC = () => {
 	const [currentWord, setCurrentWord] = useState('');
 	const currentWordRef = useRef<string>();
 	currentWordRef.current = currentWord;
-	const [invalidWord, setInvalidWord] = useState(false);
 	const [gameIsOver, setGameIsOver] = useState(false);
 	const [gameResult, setGameResult] = useState(undefined as string | undefined);
 	const [correctWord, setCorrectWord] = useState(
@@ -88,16 +87,18 @@ export const GameComponent: FC = () => {
 	const { username } = useSelector(userSelector);
 	const [waitingForGame, setWaitingForGame] = useState(false);
 	const [waitingForWordResponse, setWaitingForWordResponse] = useState(false);
+	const [wordErrorMessage, setWordErrorMessage] = useState(undefined as string | undefined);
+	const waitingForWordRef = useRef<boolean>();
+	waitingForWordRef.current = waitingForWordResponse;
 
 	const handlePopState = () => {
 		if (socketRef.current?.connected) socketRef.current?.disconnect();
 	};
 
-	const sendWord = async () => {
-		if (waitingForWordResponse) return;
+	const sendWord = async () => {	
 		setWaitingForWordResponse(true);
-		setInvalidWord(false);
 		if (!currentWordRef.current) return;
+		setWordErrorMessage(undefined);
 		try {
 			const response = await fetch(
 				`${backendEndpoint}/games/${receivedGameId}/moves`,
@@ -111,7 +112,17 @@ export const GameComponent: FC = () => {
 			);
 			if (response.status === 400) {
 				setWaitingForWordResponse(false);
-				setInvalidWord(true);
+				setWordErrorMessage('Parola non valida!');
+				return;
+			}
+			if (response.status === 429) {
+				setWaitingForWordResponse(false);
+				setWordErrorMessage('Stai inviando troppo velocemente!');
+				return;
+			}
+			if (response.status === 409) {
+				setWaitingForWordResponse(false);
+				setWordErrorMessage('Hai finito le mosse!');
 				return;
 			}
 			const { board } = (await response.json()) as {
@@ -277,12 +288,12 @@ export const GameComponent: FC = () => {
 		'target' in event && event.code === 'Enter' && event.preventDefault();
 		if (playerMovesRef.current === 6 || gameIsOverRef.current) return;
 		if (event.code === 'Space') event.preventDefault();
-		if (event.code === 'Backspace' && currentWordRef.current) {
+		if (!waitingForWordRef.current && event.code === 'Backspace' && currentWordRef.current) {
 			const [, ...newWord] = currentWordRef.current.split('').reverse(); // wtf
 			setCurrentWord(newWord.reverse().join('')); // wtf
 		}
 		// prettier-ignore
-		if (!waitingForWordResponse && event.code === 'Enter' &&	currentWordRef.current && currentWordRef.current.length === 5) {
+		if (!waitingForWordRef.current && event.code === 'Enter' &&	currentWordRef.current && currentWordRef.current.length === 5) {
 			sendWord();
 		}
 		// prettier-ignore
@@ -346,13 +357,13 @@ export const GameComponent: FC = () => {
 				{gameJoinErrorMessage} - <Link to='/games'>torna alla home</Link>
 			</Alert>
 			<Snackbar
-				open={invalidWord}
-				autoHideDuration={500}
-				onClose={() => setInvalidWord(false)}
+				open={!!wordErrorMessage}
+				autoHideDuration={750}
+				onClose={() => setWordErrorMessage(undefined)}
 				id='wordError'
 			>
 				<Alert severity='error' sx={{ width: '100%', fontWeight: 'bold' }}>
-					Parola non valida.
+					{wordErrorMessage}
 				</Alert>
 			</Snackbar>
 			<Modal
