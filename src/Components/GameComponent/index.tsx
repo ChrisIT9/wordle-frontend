@@ -119,7 +119,6 @@ export const GameComponent: FC = () => {
 				hasWon: boolean;
 			};
 			if (board && playerMovesRef.current != undefined) {
-				setWaitingForWordResponse(false);
 				currentWordRef.current.split('').map((letter, index) => {
 					if (!keyboardStatusRef.current) return null;
 					if (
@@ -143,6 +142,7 @@ export const GameComponent: FC = () => {
 				});
 				setCurrentWord('');
 				setPlayerMoves(playerMovesRef.current + 1);
+				setWaitingForWordResponse(false);
 			}
 		} catch (error) {
 			setWaitingForWordResponse(false);
