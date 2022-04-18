@@ -92,19 +92,23 @@ export const GamesComponent: FC = () => {
 	};
 
 	const checkMe = async () => {
+		setWaitingForResponse(true);
 		try {
 			const response = await fetch(`${backendEndpoint}/auth/me`, {
 				...getDefaultGetOptions(),
 			});
 			const { username } = (await response.json()) as MeResponse;
 			if (response.status === 200) {
+				setWaitingForResponse(false);
 				username && dispatch(addUsername(username));
 				fetchLobbies();
 			} else {
+				setWaitingForResponse(false);
 				dispatch(clearUsername());
 				navigate('/login');
 			}
 		} catch (error) {
+			setWaitingForResponse(false);
 			setServerUnreachable(true);
 			dispatch(clearUsername());
 		}

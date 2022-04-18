@@ -281,7 +281,7 @@ export const GameComponent: FC = () => {
 			setCurrentWord(newWord.reverse().join('')); // wtf
 		}
 		// prettier-ignore
-		if (event.code === 'Enter' &&	currentWordRef.current && currentWordRef.current.length === 5) {
+		if (!waitingForWordResponse && event.code === 'Enter' &&	currentWordRef.current && currentWordRef.current.length === 5) {
 			sendWord();
 		}
 		// prettier-ignore
