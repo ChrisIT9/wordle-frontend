@@ -94,6 +94,7 @@ export const GameComponent: FC = () => {
 	};
 
 	const sendWord = async () => {
+		if (waitingForWordResponse) return;
 		setWaitingForWordResponse(true);
 		setInvalidWord(false);
 		if (!currentWordRef.current) return;
