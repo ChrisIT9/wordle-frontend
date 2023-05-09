@@ -1,2 +1,2 @@
-export const backendEndpoint = 'https://mordle-backend.herokuapp.com';
-export const socketEndpoint = 'https://mordle-backend.herokuapp.com';
+export const backendEndpoint = 'https://wordlebackend-1-j0548615.deta.app';
+export const socketEndpoint = 'https://wordlebackend-1-j0548615.deta.app';
