@@ -1,23 +1,45 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from 'vue-router';
+import { getToken } from '@/services/auth/tokenService';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+
+  scrollBehavior() {
+    // always scroll to top
+    return { top: 0 };
+  },
+
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView
+      redirect: '/login'
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
+      path: '/login',
+      name: 'login',
+      meta: { noAuth: true },
+
+      beforeEnter: () => {
+        if (getToken()) {
+          return { name: 'dashboard' }; //redirect to the dashboard if logged
+        }
+      },
+
+      component: () => import('@/views/auth/LoginView.vue')
+    },
+    {
+      path: '/',
+      name: 'lobby',
+      component: () => import('@/views/user/LobbyView.vue')
     }
   ]
-})
+});
 
-export default router
+router.beforeEach(async (to, from) => {
+  // Make sure the user is authenticated avoiding an infinite redirect
+  if (!to.meta.noAuth && !getToken() && to.name !== 'login') {
+    return { name: 'login' }; //redirect the user to the login page
+  }
+});
+
+export default router;
